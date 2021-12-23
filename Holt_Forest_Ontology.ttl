@@ -1,0 +1,508 @@
+@prefix hf: <http://spatialai.org/holtforest/core/v1/> .
+@prefix hfds: <http://spatialai.org/holtforest/dataset/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+
+#########################
+# Annotation Properties #
+#########################
+
+hf:hasCommonName rdf:type owl:AnnotationProperty.
+	
+hf:hasScientificName rdf:type owl:AnnotationProperty.
+	
+hf:HRFSPEC rdf:type owl:AnnotationProperty.
+	
+hf:FIA rdf:type owl:AnnotationProperty.
+
+#####################
+# Object Properties #
+#####################
+
+hf:contains rdf:type owl:ObjectProperty;
+	owl:inverseOf hf:containedIn;
+	rdf:type owl:TransitiveProperty.						
+
+hf:containsQuad rdf:type owl:ObjectProperty;
+	rdfs:subPropertyOf hf:contains;
+	rdfs:domain hf:Block;
+	rdfs:range hf:Quadrat;
+	rdf:type owl:AsymmetricProperty.
+
+hf:containsSubQuad rdf:type owl:ObjectProperty;
+	rdfs:subPropertyOf hf:contains;
+	rdfs:domain hf:Quadrat;
+	rdfs:range hf:SubQuadrat;
+	rdf:type owl:AsymmetricProperty.
+
+hf:containedIn rdf:type owl:ObjectProperty;
+	rdfs:domain _:UQuadSubQuad;								
+	rdfs:range _:UBlockQuad;											
+	owl:inverseOf hf:contains;
+	rdf:type owl:TransitiveProperty.							
+
+hf:hasTreeCount rdf:type owl:ObjectProperty;
+	rdfs:domain hf:TreeInventory;
+	rdfs:range hf:TreeCount.
+
+hf:ofTreeType rdf:type owl:ObjectProperty;
+	rdf:type owl:FunctionalProperty;
+	rdfs:domain hf:TreeCount;
+	rdfs:range hf:Tree.
+	
+hf:hasFeature rdf:type owl:ObjectProperty;
+			  rdf:type owl:FunctionalProperty;
+	rdfs:domain [rdf:type owl:Class;
+                owl:unionOf (hf:Inventory hf:Plant)];
+	rdfs:range hf:Quadrat.
+	
+_:UBlockQuad rdf:type owl:Class;
+	owl:unionOf(hf:Block hf:Quadrat).
+
+_:UQuadSubQuad rdf:type owl:Class;
+	owl:unionOf(hf:Quadrat hf:SubQuadrat).
+
+#######################
+# DataType Properties #
+#######################
+
+hf:hasNumericValue rdf:type owl:DatatypeProperty;							
+							rdf:type owl:FunctionalProperty;				
+	rdfs:domain hf:TreeCount;
+	rdfs:range xsd:nonNegativeInteger.
+
+hf:yearOfInventory rdf:type owl:DatatypeProperty;
+				   rdf:type owl:FunctionalProperty;
+	rdfs:domain hf:Inventory;
+	rdfs:range xsd:gYear.
+	
+hf:yearOfObservation rdf:type owl:DatatypeProperty;
+				   rdf:type owl:FunctionalProperty;
+	rdfs:domain hf:Tree;
+	rdfs:range xsd:gYear.
+
+hf:diameterAtBreastHeight rdf:type owl:DatatypeProperty;
+						rdf:type owl:FunctionalProperty;
+	rdfs:domain hf:Tree;
+	rdfs:range xsd:nonNegativeInteger.
+	
+hf:conditionCode rdf:type owl:DatatypeProperty;
+                rdf:type owl:FunctionalProperty;
+	rdfs:domain hf:Tree;
+	rdfs:range [a rdfs:Datatype;
+				owl:oneOf (0 1 2 3 4 5 6)
+				].
+
+#################################
+# Classes: Study Area Divisions #
+#################################
+
+hf:HoltPartition rdf:type owl:Class.									
+
+hf:Block rdf:type owl:Class;
+	rdfs:label "Study area blocks"@en;
+	rdfs:subClassOf hf:HoltPartition;
+	rdfs:subClassOf [rdf:type owl:Restriction;
+					owl:onProperty hf:containsQuad;
+					owl:qualifiedCardinality "4"^^xsd:nonNegativeInteger;
+					owl:onClass hf:Quadrat].
+
+hf:NorthBlock rdf:type owl:Class;
+	rdfs:subClassOf hf:Block;
+	owl:disjointWith hf:SouthBlock;
+	rdfs:label "Northern blocks"@en;
+	rdfs:comment "Blocks found at the nothern part of study area"@en .
+
+hf:SouthBlock rdf:type owl:Class;
+	rdfs:subClassOf hf:Block;
+	owl:disjointWith hf:NorthBlock;
+	rdfs:label "Southern blocks"@en;
+	rdfs:comment "Blocks found at the southern part of study area"@en .
+	
+hf:ManagedBlock rdf:type owl:Class;
+	rdfs:subClassOf hf:Block;
+	owl:disjointWith hf:ControlBlock;
+	rdfs:label "Managed blocks"@en;
+	rdfs:comment "Blocks found at the western part of study area"@en .
+	
+hf:ControlBlock rdf:type owl:Class;
+	rdfs:subClassOf hf:Block;
+	owl:disjointWith hf:ManagedBlock;
+	rdfs:label "Control blocks"@en;
+	rdfs:comment "Blocks found at the eastern part of study area"@en .
+
+
+hf:Quadrat rdf:type owl:Class;
+	rdfs:label "Study area quadrats"@en;
+	rdfs:comment "Divisions in block"@en;
+	rdfs:subClassOf hf:HoltPartition,
+					[rdf:type owl:Restriction;
+					owl:onProperty hf:containsSubQuad;
+					owl:qualifiedCardinality "4"^^xsd:nonNegativeInteger;
+					owl:onClass hf:SubQuadrat],
+					[rdf:type owl:Restriction;
+					owl:onProperty hf:containedIn;
+					owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger;
+					owl:onClass hf:Block].  
+
+hf:SubQuadrat rdf:type owl:Class;
+	rdfs:label "Study area subquadrats"@en;
+	rdfs:comment "Divisions in quadrats"@en;
+	rdfs:subClassOf hf:HoltPartition,
+					[rdf:type owl:Restriction;
+					owl:onProperty hf:containedIn;
+					owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger;
+					owl:onClass hf:Quadrat].
+	
+_:DisjointPartions rdf:type owl:AllDisjointClasses;
+	owl:members (hf:Block hf:Quadrat hf:SubQuadrat).
+
+####################
+# Classes: Species #
+####################
+
+hf:Plant rdf:type owl:Class;
+	rdfs:label "Plants"@en;
+	rdfs:comment "All plants found in study area"@en.
+	
+hf:Tree rdf:type owl:Class;
+	rdfs:subClassOf hf:Plant.
+	
+hf:DeciduousTree rdf:type owl:Class;
+    rdfs:subClassOf hf:Tree;
+	rdfs:label "Deciduous Trees"@en;
+	rdfs:comment "Trees that shed their leaves every fall"@en.
+    
+hf:EvergreenTree rdf:type owl:Class;
+    rdfs:subClassOf hf:Tree;
+	rdfs:label "Evergreen Trees"@en;
+	rdfs:comment "Trees that have foliage that remains green and functional through more than one growing season"@en.
+
+hf:WhitePine rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "white pine"^^xsd:string;
+	hf:hasCommonName "white pine"^^xsd:literal;
+	hf:hasScientificName "Pinus strobus"^^xsd:literal;
+	hf:HRFSPEC "1"^^xsd:nonNegativeInteger;
+	hf:FIA "129"^^xsd:nonNegativeInteger.
+
+hf:RedSpruce rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "red spruce"^^xsd:string;
+	hf:hasCommonName "red spruce"^^xsd:literal;
+	hf:hasScientificName "Picea rubens"^^xsd:literal;
+	hf:HRFSPEC "2"^^xsd:nonNegativeInteger;
+	hf:FIA "097"^^xsd:nonNegativeInteger.
+
+hf:BalsamFir rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "balsam fir"^^xsd:string;
+	hf:hasCommonName "balsam fir"^^xsd:literal;
+	hf:hasScientificName "Abies balsamia"^^xsd:literal;
+	hf:HRFSPEC "3"^^xsd:nonNegativeInteger;
+	hf:FIA "012"^^xsd:nonNegativeInteger.
+
+hf:Hemlock rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "hemlock"^^xsd:string;
+	hf:hasCommonName "hemlock"^^xsd:literal;
+	hf:hasScientificName "Tsuga canadensis"^^xsd:literal;
+	hf:HRFSPEC "4"^^xsd:nonNegativeInteger;
+	hf:FIA "261"^^xsd:nonNegativeInteger.
+
+hf:RedOak rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "red oak"^^xsd:string;
+	hf:hasCommonName "red oak"^^xsd:literal;
+	hf:hasScientificName "Quercus rubra"^^xsd:literal;
+	hf:HRFSPEC "5"^^xsd:nonNegativeInteger;
+	hf:FIA "833"^^xsd:nonNegativeInteger.
+
+hf:WhiteOak rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "white oak"^^xsd:string;
+	hf:hasCommonName "white oak"^^xsd:literal;
+	hf:hasScientificName "Quercus alba"^^xsd:literal;
+	hf:HRFSPEC "6"^^xsd:nonNegativeInteger;
+	hf:FIA "802"^^xsd:nonNegativeInteger.
+
+hf:RedMaple rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "red maple"^^xsd:string;
+	hf:hasCommonName "red maple"^^xsd:literal;
+	hf:hasScientificName "Acer rubrum"^^xsd:literal;
+	hf:HRFSPEC "7"^^xsd:nonNegativeInteger;
+	hf:FIA "316"^^xsd:nonNegativeInteger.
+
+hf:YellowBirch rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "yellow birch"^^xsd:string;
+	hf:hasCommonName "yellow birch"^^xsd:literal;
+	hf:hasScientificName "Betula alleghaniensis"^^xsd:literal;
+	hf:HRFSPEC "8"^^xsd:nonNegativeInteger;
+	hf:FIA "371"^^xsd:nonNegativeInteger.
+
+hf:PaperBirch rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "paper birch"^^xsd:string;
+	hf:hasCommonName "paper birch"^^xsd:literal;
+	hf:hasScientificName "Betula papyrifera"^^xsd:literal;
+	hf:HRFSPEC "9"^^xsd:nonNegativeInteger;
+	hf:FIA "375"^^xsd:nonNegativeInteger.
+
+hf:GrayBirch rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "gray birch"^^xsd:string;
+	hf:hasCommonName "gray birch"^^xsd:literal;
+	hf:hasScientificName "Betula populifolia"^^xsd:literal;
+	hf:HRFSPEC "10"^^xsd:nonNegativeInteger;
+	hf:FIA "379"^^xsd:nonNegativeInteger.
+
+hf:Beech rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "beech"^^xsd:string;
+	hf:hasCommonName "beech"^^xsd:literal;
+	hf:hasScientificName "Fagus grandifolia"^^xsd:literal;
+	hf:HRFSPEC "11"^^xsd:nonNegativeInteger;
+	hf:FIA "531"^^xsd:nonNegativeInteger.
+
+hf:WhiteAsh rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "white ash"^^xsd:string;
+	hf:hasCommonName "white ash"^^xsd:literal;
+	hf:hasScientificName "Fraxinus americana"^^xsd:literal;
+	hf:HRFSPEC "12"^^xsd:nonNegativeInteger;
+	hf:FIA "541"^^xsd:nonNegativeInteger.
+
+hf:StripedMaple rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "striped maple"^^xsd:string;
+	hf:hasCommonName "striped maple"^^xsd:literal;
+	hf:hasScientificName "Acer pensylvanicum"^^xsd:literal;
+	hf:HRFSPEC "13"^^xsd:nonNegativeInteger;
+	hf:FIA "315"^^xsd:nonNegativeInteger.
+
+hf:BigtoothAspen rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "bigtooth aspen"^^xsd:string;
+	hf:hasCommonName "bigtooth aspen"^^xsd:literal;
+	hf:hasScientificName "Populus grandidentata"^^xsd:literal;
+	hf:HRFSPEC "14"^^xsd:nonNegativeInteger;
+	hf:FIA "743"^^xsd:nonNegativeInteger.
+
+hf:QuakingAspen rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "quaking aspen"^^xsd:string;
+	hf:hasCommonName "quaking aspen"^^xsd:literal;
+	hf:hasScientificName "Populus tremuloides"^^xsd:literal;
+	hf:HRFSPEC "15"^^xsd:nonNegativeInteger;
+	hf:FIA "746"^^xsd:nonNegativeInteger.
+
+hf:BlackCherry rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "black cherry"^^xsd:string;
+	hf:hasCommonName "black cherry"^^xsd:literal;
+	hf:hasScientificName "Prunus serotina"^^xsd:literal;
+	hf:HRFSPEC "16"^^xsd:nonNegativeInteger;
+	hf:FIA "762"^^xsd:nonNegativeInteger.
+
+hf:Apple rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "apple"^^xsd:string;
+	hf:hasCommonName "apple"^^xsd:literal;
+	hf:hasScientificName "Pyrus malus"^^xsd:literal;
+	hf:HRFSPEC "17"^^xsd:nonNegativeInteger;
+	hf:FIA "660"^^xsd:nonNegativeInteger.
+
+hf:HophornBeam rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "hop hornbeam"^^xsd:string;
+	hf:hasCommonName "hop hornbeam"^^xsd:literal;
+	hf:hasScientificName "Ostrya virginiana"^^xsd:literal;
+	hf:HRFSPEC "18"^^xsd:nonNegativeInteger;
+	hf:FIA "701"^^xsd:nonNegativeInteger.
+
+hf:RedPine rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "red pine"^^xsd:string;
+	hf:hasCommonName "red pine"^^xsd:literal;
+	hf:hasScientificName "Pinus resinosa"^^xsd:literal;
+	hf:HRFSPEC "19"^^xsd:nonNegativeInteger;
+	hf:FIA "125"^^xsd:nonNegativeInteger.
+
+hf:PitchPine rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "pitch pine"^^xsd:string;
+	hf:hasCommonName "pitch pine"^^xsd:literal;
+	hf:hasScientificName "Pinus rigida"^^xsd:literal;
+	hf:HRFSPEC "20"^^xsd:nonNegativeInteger;
+	hf:FIA "126"^^xsd:nonNegativeInteger.
+
+hf:NorthernWhiteCedar rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "northern white-cedar"^^xsd:string;
+	hf:hasCommonName "northern white-cedar"^^xsd:literal;
+	hf:hasScientificName "Thuja occidentalis"^^xsd:literal;
+	hf:HRFSPEC "21"^^xsd:nonNegativeInteger;
+	hf:FIA "241"^^xsd:nonNegativeInteger.
+
+hf:BlackSpruce rdf:type owl:Class;
+	rdfs:subClassOf hf:EvergreenTree;
+	rdfs:label "black spruce"^^xsd:string;
+	hf:hasCommonName "black spruce"^^xsd:literal;
+	hf:hasScientificName "Picea mariana"^^xsd:literal;
+	hf:HRFSPEC "22"^^xsd:nonNegativeInteger;
+	hf:FIA "095"^^xsd:nonNegativeInteger.
+
+hf:GreenAsh rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "green ash"^^xsd:string;
+	hf:hasCommonName "green ash"^^xsd:literal;
+	hf:hasScientificName "Fraxinus pennsylvanica"^^xsd:literal;
+	hf:HRFSPEC "23"^^xsd:nonNegativeInteger;
+	hf:FIA "544"^^xsd:nonNegativeInteger.
+
+
+hf:SugarMaple rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "sugar maple"^^xsd:string;
+	hf:hasCommonName "sugar maple"^^xsd:literal;
+	hf:hasScientificName "Acer saccharum"^^xsd:literal;
+	hf:HRFSPEC "24"^^xsd:nonNegativeInteger;
+	hf:FIA "318"^^xsd:nonNegativeInteger.
+
+hf:WitchHazel rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "witch hazel"^^xsd:string;
+	hf:hasCommonName "witch hazel"^^xsd:literal;
+	hf:hasScientificName "Hamamelis virginiana"^^xsd:literal;
+	hf:HRFSPEC "25"^^xsd:nonNegativeInteger;
+	hf:FIA "585"^^xsd:nonNegativeInteger.
+
+hf:Alder rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "alder sp."^^xsd:string;
+	hf:hasCommonName "alder sp."^^xsd:literal;
+	hf:hasScientificName "Alnus sp."^^xsd:literal;
+	hf:HRFSPEC "26"^^xsd:nonNegativeInteger;
+	hf:FIA "350"^^xsd:nonNegativeInteger.
+
+hf:BlackOak rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "black oak"^^xsd:string;
+	hf:hasCommonName "black oak"^^xsd:literal;
+	hf:hasScientificName "Quercus velutina"^^xsd:literal;
+	hf:HRFSPEC "27"^^xsd:nonNegativeInteger;
+	hf:FIA "837"^^xsd:nonNegativeInteger.
+
+hf:HorseChestnut rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "horsechestnut"^^xsd:string;
+	hf:hasCommonName "horsechestnut"^^xsd:literal;
+	hf:hasScientificName "Aesculus"^^xsd:literal;
+	hf:HRFSPEC "28"^^xsd:nonNegativeInteger;
+	hf:FIA "330"^^xsd:nonNegativeInteger.
+
+hf:BeakedHazelnut rdf:type owl:Class;
+	rdfs:subClassOf hf:DeciduousTree;
+	rdfs:label "beaked hazelnut"^^xsd:string;
+	hf:hasCommonName "beaked hazelnut"^^xsd:literal;
+	hf:hasScientificName "Corylus cornuta"^^xsd:literal;
+	hf:HRFSPEC "29"^^xsd:nonNegativeInteger;
+	hf:FIA "502"^^xsd:nonNegativeInteger.
+
+_:DisjointTreeSpecies rdf:type owl:AllDisjointClasses;
+	owl:members (hf:WhitePine hf:RedSpruce hf:BalsamFir
+				hf:Hemlock hf:RedOak hf:WhiteOak hf:RedMaple
+				hf:YellowBirch hf:PaperBirch hf:GrayBirch
+				hf:Beech hf:WhiteAsh hf:StripedMaple
+				hf:BigtoothAspen hf:QuakingAspen hf:BlackCherry
+				hf:Apple hf:HophornBeam hf:RedPine hf:PitchPine
+				hf:NorthernWhiteCedar hf:BlackSpruce hf:GreenAsh
+				hf:SugarMaple hf:WitchHazel hf:Alder hf:BlackOak
+				hf:HorseChestnut hf:BeakedHazelnut).
+
+hf:LiveTree rdf:type owl:Class;
+	rdfs:subClassOf hf:Tree;
+	owl:equivalentClass [rdf:type owl:Restriction;
+						owl:onProperty hf:conditionCode;
+						owl:hasValue "0"^^xsd:nonNegativeInteger].
+	
+hf:DeadTree rdf:type owl:Class;
+	rdfs:subClassOf hf:Tree;
+	owl:equivalentClass [rdf:type owl:Restriction;
+						owl:onProperty hf:conditionCode;
+						owl:hasValue "1"^^xsd:nonNegativeInteger].
+	
+hf:CullTree rdf:type owl:Class;
+	rdfs:subClassOf hf:Tree;
+	owl:equivalentClass [rdf:type owl:Restriction;
+						owl:onProperty hf:conditionCode;
+						owl:hasValue "2"^^xsd:nonNegativeInteger].
+	
+hf:DeadTopTree rdf:type owl:Class;
+	rdfs:subClassOf hf:Tree;
+	owl:equivalentClass [rdf:type owl:Restriction;
+						owl:onProperty hf:conditionCode;
+						owl:hasValue "3"^^xsd:nonNegativeInteger].
+	
+hf:AlmostDeadTree rdf:type owl:Class;
+	rdfs:subClassOf hf:Tree;
+	owl:equivalentClass [rdf:type owl:Restriction;
+						owl:onProperty hf:conditionCode;
+						owl:hasValue "4"^^xsd:nonNegativeInteger].
+	
+hf:StillStandingTree rdf:type owl:Class;
+	rdfs:subClassOf hf:Tree;
+	owl:equivalentClass [rdf:type owl:Restriction;
+						owl:onProperty hf:conditionCode;
+						owl:hasValue "5"^^xsd:nonNegativeInteger].
+	
+hf:DeadAndDownTree rdf:type owl:Class;
+	rdfs:subClassOf hf:Tree;
+	owl:equivalentClass [rdf:type owl:Restriction;
+						owl:onProperty hf:conditionCode;
+						owl:hasValue "6"^^xsd:nonNegativeInteger].
+
+_:DisjointTrees rdf:type owl:AllDisjointClasses;
+	owl:members (hf:LiveTree hf:DeadTree hf:CullTree
+				hf:DeadTopTree hf:AlmostDeadTree
+				hf:StillStandingTree hf:DeadAndDownTree).
+
+######################
+# Classes: Inventory #
+######################	
+
+hf:Inventory rdf:type owl:Class.			
+				
+hf:TreeInventory rdf:type owl:Class;
+				 rdfs:subClassOf hf:Inventory,
+								[rdf:type owl:Restriction;
+								owl:onProperty hf:hasTreeCount;
+								owl:allValuesFrom hf:TreeCount].
+
+hf:TreeCount rdf:type owl:Class;
+			rdfs:subClassOf [
+							rdf:type owl:Restriction;
+							owl:onProperty hf:ofTreeType;
+							owl:allValuesFrom hf:Tree
+							],
+							[
+							rdf:type owl:Restriction;
+							owl:onProperty hf:hasNumericValue;
+							owl:allValuesFrom xsd:nonNegativeInteger
+							].
+
+
+
+
+
+
+
+
+
+
+
