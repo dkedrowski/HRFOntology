@@ -23,8 +23,7 @@ hf:FIA rdf:type owl:AnnotationProperty.
 #####################
 
 hf:contains rdf:type owl:ObjectProperty;
-	owl:inverseOf hf:containedIn;
-	rdf:type owl:TransitiveProperty.						
+	owl:inverseOf hf:containedIn.						
 
 hf:containsQuad rdf:type owl:ObjectProperty;
 	rdfs:subPropertyOf hf:contains;
@@ -41,8 +40,7 @@ hf:containsSubQuad rdf:type owl:ObjectProperty;
 hf:containedIn rdf:type owl:ObjectProperty;
 	rdfs:domain _:UQuadSubQuad;								
 	rdfs:range _:UBlockQuad;											
-	owl:inverseOf hf:contains;
-	rdf:type owl:TransitiveProperty.							
+	owl:inverseOf hf:contains.							
 
 hf:hasTreeCount rdf:type owl:ObjectProperty;
 	rdfs:domain hf:TreeInventory;
